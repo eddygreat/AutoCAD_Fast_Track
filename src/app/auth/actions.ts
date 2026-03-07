@@ -52,3 +52,34 @@ export async function signout() {
     revalidatePath('/', 'layout');
     redirect('/');
 }
+
+export async function requestPasswordReset(formData: FormData) {
+    const supabase = await createClient();
+    const email = formData.get('email') as string;
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/reset-password`,
+    });
+
+    if (error) {
+        return redirect(`/auth/forgot-password?message=${error.message}`);
+    }
+
+    return redirect(`/auth/forgot-password?success=Check your email for the reset link`);
+}
+
+export async function resetPassword(formData: FormData) {
+    const supabase = await createClient();
+    const password = formData.get('password') as string;
+
+    const { error } = await supabase.auth.updateUser({
+        password: password
+    });
+
+    if (error) {
+        return redirect(`/auth/reset-password?message=${error.message}`);
+    }
+
+    // After resetting password, redirect to login
+    redirect('/auth/login?message=Password updated successfully. Please log in.');
+}

@@ -1,11 +1,10 @@
-import { login } from '../actions';
+import { requestPasswordReset } from '../actions';
 import Link from 'next/link';
-import { PasswordInput } from '@/components/PasswordInput';
 
-export default async function LoginPage({
+export default async function ForgotPasswordPage({
     searchParams,
 }: {
-    searchParams: Promise<{ message: string }>
+    searchParams: Promise<{ message?: string, success?: string }>
 }) {
     const resolvedParams = await searchParams;
 
@@ -14,13 +13,13 @@ export default async function LoginPage({
             <div className="w-full max-w-md p-8 space-y-6 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800">
 
                 <div className="text-center">
-                    <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Welcome Back</h1>
-                    <p className="text-sm text-zinc-500 mt-2">Log in to CAD Fast Track to continue.</p>
+                    <h1 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-50">Reset Password</h1>
+                    <p className="text-sm text-zinc-500 mt-2">Enter your email and we'll send you a link to reset your password.</p>
                 </div>
 
                 <form className="space-y-4">
                     <div className="space-y-2">
-                        <label className="text-sm font-medium leading-none" htmlFor="email">Email</label>
+                        <label className="text-sm font-medium leading-none" htmlFor="email">Email address</label>
                         <input
                             id="email"
                             name="email"
@@ -31,21 +30,11 @@ export default async function LoginPage({
                         />
                     </div>
 
-                    <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                            <label className="text-sm font-medium leading-none" htmlFor="password">Password</label>
-                            <Link href="/auth/forgot-password" className="text-xs font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
-                                Forgot Password?
-                            </Link>
-                        </div>
-                        <PasswordInput />
-                    </div>
-
                     <button
-                        formAction={login}
+                        formAction={requestPasswordReset}
                         className="w-full inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-semibold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 bg-blue-600 text-white hover:bg-blue-700 h-11 px-8 py-2 shadow-sm shadow-blue-600/20 mt-4 active:scale-[0.98]"
                     >
-                        Log in
+                        Send Reset Link
                     </button>
 
                     {resolvedParams?.message && (
@@ -54,11 +43,17 @@ export default async function LoginPage({
                         </p>
                     )}
 
+                    {resolvedParams?.success && (
+                        <p className="mt-4 p-3 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-sm text-center rounded-lg">
+                            {resolvedParams.success}
+                        </p>
+                    )}
+
                     <div className="text-center pt-4">
                         <p className="text-sm text-zinc-500">
-                            Don't have an account?{' '}
-                            <Link href="/enroll" className="text-blue-600 hover:text-blue-500 font-medium">
-                                Enroll Now
+                            Remember your password?{' '}
+                            <Link href="/auth/login" className="text-blue-600 hover:text-blue-500 font-medium">
+                                Back to Log in
                             </Link>
                         </p>
                     </div>

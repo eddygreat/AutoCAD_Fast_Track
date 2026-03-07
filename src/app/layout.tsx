@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { NavBar } from '@/components/NavBar';
+import { Footer } from '@/components/Footer';
 import { getUserSession } from '@/app/auth/session';
 import { createClient } from '@/utils/supabase/server';
 import './globals.css';
@@ -33,11 +34,12 @@ export default async function RootLayout({
 
     return (
         <html lang="en" className="scroll-smooth" suppressHydrationWarning>
-            <body className={`${inter.className} bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 antialiased selection:bg-blue-200 dark:selection:bg-blue-900/50`}>
+            <body className={`${inter.className} bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-50 antialiased selection:bg-blue-200 dark:selection:bg-blue-900/50 flex flex-col min-h-screen`}>
                 <NavBar user={user} role={role} />
-                <main className="pt-20 min-h-screen">
+                <main className="pt-20 flex-grow">
                     {children}
                 </main>
+                <Footer />
             </body>
         </html>
     );
