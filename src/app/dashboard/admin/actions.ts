@@ -114,12 +114,23 @@ export async function deleteUser(userId: string) {
             throw new Error('Cannot delete an admin user.');
         }
 
-        // 3. Delete from Supabase Auth (This will cascade and delete the row in public.users)
+        // 3. Delete from public.users manually (Since it doesn't cascade automatically)
+        const { error: dbDeleteError } = await supabaseAdmin
+            .from('users')
+            .delete()
+            .eq('id', userId);
+
+        if (dbDeleteError) {
+            console.error('Failed to delete user profile from db:', dbDeleteError);
+            return { error: 'Failed to delete user from database.' };
+        }
+
+        // 4. Delete from Supabase Auth
         const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
         if (deleteError) {
-            console.error('Failed to delete user:', deleteError);
-            return { error: 'Failed to delete user from database.' };
+            console.error('Failed to delete user from auth:', deleteError);
+            return { error: 'Failed to delete user secure identity.' };
         }
 
         // 4. Refresh Admin UI
