@@ -106,7 +106,7 @@ export default async function DashboardPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     {/* Plan Details Card */}
-                    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-zinc-200 dark:border-zinc-800">
+                    <div className="bg-white dark:bg-zinc-900 rounded-2xl p-6 shadow-sm border border-zinc-200 dark:border-zinc-800 flex flex-col h-full">
                         <div className="flex items-center gap-3 mb-4">
                             <div className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
                                 <Award className="w-5 h-5" />
@@ -115,11 +115,25 @@ export default async function DashboardPage() {
                         </div>
 
                         {profile ? (
-                            <div>
-                                <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 capitalize mt-1">
-                                    {profile.plan_tier}
-                                </p>
-                                <p className="text-sm text-zinc-500 mt-2">Access to course materials based on your tier.</p>
+                            <div className="flex-1 flex flex-col">
+                                <div className="flex-1">
+                                    <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 capitalize mt-1">
+                                        {profile.plan_tier === 'gold' ? 'Gold Premium' : profile.plan_tier}
+                                    </p>
+                                    <p className="text-sm text-zinc-500 mt-2">Access to course materials based on your tier.</p>
+                                </div>
+
+                                {profile.plan_tier !== 'gold' && profile.role !== 'admin' && (
+                                    <div className="pt-4 mt-2 border-t border-zinc-100 dark:border-zinc-800/60">
+                                        <Link
+                                            href="/dashboard/upgrade"
+                                            className="inline-flex w-full items-center justify-center gap-2 px-4 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-900 dark:text-white rounded-lg text-sm font-semibold transition-colors"
+                                        >
+                                            <Award className="w-4 h-4" />
+                                            Upgrade Plan
+                                        </Link>
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             <p className="text-zinc-500 text-sm animate-pulse">Syncing profile...</p>

@@ -3,6 +3,7 @@ import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import { ShieldCheck, UserCheck, CheckCircle2, XCircle } from 'lucide-react';
 import { AuthorizeClientButton } from './AuthorizeClientButton';
+import { ScholarshipLinkGenerator } from './ScholarshipLinkGenerator';
 
 export const metadata = {
     title: 'Admin Dashboard | CAD Fast Track',
@@ -49,6 +50,10 @@ export default async function AdminDashboardPage() {
                     </div>
                 </div>
 
+                <div className="mb-8">
+                    <ScholarshipLinkGenerator />
+                </div>
+
                 <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden">
                     <div className="px-6 py-5 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
                         <h3 className="text-lg font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
@@ -84,8 +89,8 @@ export default async function AdminDashboardPage() {
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${student.role === 'admin'
-                                                        ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800'
-                                                        : 'bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-300'
+                                                    ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800'
+                                                    : 'bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-300'
                                                     }`}>
                                                     {student.role}
                                                 </span>
