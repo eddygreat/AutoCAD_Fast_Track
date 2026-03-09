@@ -59,6 +59,10 @@ export default async function AdminDashboardPage({
         console.error("Error fetching users for admin:", usersError);
     }
 
+    // 4. Get Scholarship Settings
+    const { getScholarshipSettings } = await import('./actions');
+    const settings = await getScholarshipSettings();
+
     // Helper for generating filter URLs
     const createFilterUrl = (type: 'status' | 'tier', value: string) => {
         const params = new URLSearchParams();
@@ -87,7 +91,10 @@ export default async function AdminDashboardPage({
                 </div>
 
                 <div className="mb-8">
-                    <ScholarshipLinkGenerator />
+                    <ScholarshipLinkGenerator
+                        isActive={settings.scholarship_active}
+                        currentCode={settings.scholarship_code}
+                    />
                 </div>
 
                 <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden">
@@ -109,8 +116,8 @@ export default async function AdminDashboardPage({
                                             key={status}
                                             href={createFilterUrl('status', status)}
                                             className={`px-2.5 py-1 text-xs font-medium rounded-md capitalize transition-colors ${currentStatus === status
-                                                    ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-600'
-                                                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50'
+                                                ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-600'
+                                                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50'
                                                 }`}
                                         >
                                             {status}
@@ -125,8 +132,8 @@ export default async function AdminDashboardPage({
                                             key={tier}
                                             href={createFilterUrl('tier', tier)}
                                             className={`px-2.5 py-1 text-xs font-medium rounded-md capitalize transition-colors ${currentTier === tier
-                                                    ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-600'
-                                                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50'
+                                                ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-600'
+                                                : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50'
                                                 }`}
                                         >
                                             {tier}

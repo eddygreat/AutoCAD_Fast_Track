@@ -142,3 +142,56 @@ export async function deleteUser(userId: string) {
         return { error: error.message || 'An unknown error occurred during deletion.' };
     }
 }
+
+/**
+ * Gets the current scholarship settings (active status and secret code).
+ */
+export async function getScholarshipSettings() {
+    try {
+        await requireAdmin();
+        const supabase = await createClient();
+        const { data, error } = await supabase
+            .from('app_settings')
+            .select('scholarship_active, scholarship_code')
+            .eq('id', 1)
+            .single();
+
+        if (error || !data) {
+            // Fallback gracefully if table isn't seeded correctly yet
+            return { scholarship_active: false, scholarship_code: 'CAD-SCHOLAR-2026' };
+        }
+        return data;
+    } catch (error) {
+        return { scholarship_active: false, scholarship_code: 'CAD-SCHOLAR-2026' };
+    }
+}
+
+/**
+ * Toggles the scholarship status. If turning ON, it rotates the secret code to invalidate old links.
+ */
+export async function toggleScholarship(active: boolean) {
+    try {
+        await requireAdmin();
+        const supabase = await createClient();
+
+        let updateData: { scholarship_active: boolean, scholarship_code?: string } = { scholarship_active: active };
+
+        // If turning it on, generate a new random code
+        if (active) {
+            updateData.scholarship_code = `CS-${Math.random().toString(36).substring(2, 10).toUpperCase()}-${Date.now().toString(36).toUpperCase()}`;
+        }
+
+        const { error } = await supabase
+            .from('app_settings')
+            .update(updateData)
+            .eq('id', 1);
+
+        if (error) throw error;
+
+        revalidatePath('/dashboard/admin');
+        return { success: true };
+    } catch (error: any) {
+        console.error('Failed to toggle scholarship:', error);
+        return { error: 'Failed to update scholarship settings' };
+    }
+}

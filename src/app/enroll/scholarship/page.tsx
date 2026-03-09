@@ -17,12 +17,17 @@ export default async function ScholarshipRegisterPage({
     const amount = resolvedParams?.amount;
     const code = resolvedParams?.code;
 
-    // Secret verification (Basic security to prevent URL tampering)
-    const SECRET_CODE = process.env.SCHOLARSHIP_SECRET_CODE || 'CAD-SCHOLAR-2026';
+    // Dynamic Secret Code and active state verification
+    const { getScholarshipSettings } = await import('@/app/dashboard/admin/actions');
+    const settings = await getScholarshipSettings();
 
-    if (!selectedTier || !amount || !code || code !== SECRET_CODE) {
+    if (!settings.scholarship_active) {
+        redirect('/enroll?message=Scholarships are currently closed.');
+    }
+
+    if (!selectedTier || !amount || !code || code !== settings.scholarship_code) {
         // Log unauthorized attempt if desired
-        redirect('/enroll');
+        redirect('/enroll?message=Invalid or expired scholarship link.');
     }
 
     return (

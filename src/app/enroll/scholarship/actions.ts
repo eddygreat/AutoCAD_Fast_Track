@@ -12,11 +12,16 @@ export async function scholarshipSignup(formData: FormData) {
     const amount = formData.get('amount') as string;
     const code = formData.get('code') as string;
 
-    // Validate the secret code again on the server side
-    const SECRET_CODE = process.env.SCHOLARSHIP_SECRET_CODE || 'CAD-SCHOLAR-2026';
+    // Validate the dynamic secret code again on the server side
+    const { getScholarshipSettings } = await import('@/app/dashboard/admin/actions');
+    const settings = await getScholarshipSettings();
 
-    if (code !== SECRET_CODE) {
-        return redirect(`/enroll/scholarship?tier=${tier}&amount=${amount}&code=${code}&message=Invalid scholarship code`);
+    if (!settings.scholarship_active) {
+        return redirect(`/enroll?message=Scholarships are currently closed.`);
+    }
+
+    if (code !== settings.scholarship_code) {
+        return redirect(`/enroll?message=Invalid or expired scholarship code.`);
     }
 
     const nextUrl = encodeURIComponent(`/enroll/scholarship/checkout?tier=${tier}&amount=${amount}`);
