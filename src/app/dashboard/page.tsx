@@ -40,9 +40,15 @@ export default async function DashboardPage() {
     const isAdmin = profile?.role === 'admin';
     const hasAccess = isPaid || isAdmin;
 
-    // Determine user's tier and price
+    // Determine user's tier and scholarship price
     const userTier = profile?.plan_tier || 'basic';
-    const amountDue = TIER_PRICING[userTier as keyof typeof TIER_PRICING] || 99;
+    const scholarshipAmountStr = user.user_metadata?.scholarship_amount;
+
+    let amountDue = TIER_PRICING[userTier as keyof typeof TIER_PRICING] || 99;
+
+    if (scholarshipAmountStr) {
+        amountDue = Number(scholarshipAmountStr);
+    }
 
     if (!hasAccess) {
         return (

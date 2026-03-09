@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { authorizeUser } from './actions';
+import { authorizeUser, deleteUser } from './actions';
 import { Loader2, Settings2 } from 'lucide-react';
 
 export function AuthorizeClientButton({
@@ -17,11 +17,14 @@ export function AuthorizeClientButton({
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [selectedTier, setSelectedTier] = useState('premium');
     const [error, setError] = useState('');
 
     const handleAuthorize = async () => {
         setIsLoading(true);
+        setIsDeleting(false);
         setError('');
 
         const result = await authorizeUser(userId, selectedTier);
@@ -30,9 +33,28 @@ export function AuthorizeClientButton({
             setError(result.error);
             setIsLoading(false);
         } else {
-            // Success! The server action calls revalidatePath, so the UI will automatically update.
             setIsOpen(false);
             setIsLoading(false);
+        }
+    };
+
+    const handleDelete = async () => {
+        setIsLoading(true);
+        setIsDeleting(true);
+        setError('');
+
+        const result = await deleteUser(userId);
+
+        if (result.error) {
+            setError(result.error);
+            setIsLoading(false);
+            setIsDeleting(false);
+            setShowDeleteConfirm(false);
+        } else {
+            setIsOpen(false);
+            setIsLoading(false);
+            setIsDeleting(false);
+            setShowDeleteConfirm(false);
         }
     };
 
@@ -66,12 +88,12 @@ export function AuthorizeClientButton({
                     />
 
                     {/* Dropdown menu */}
-                    <div className="origin-top-right absolute right-0 mt-2 w-72 rounded-xl shadow-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:outline-none z-20">
+                    <div className="origin-top-right absolute right-0 mt-2 w-72 rounded-xl shadow-xl bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 focus:outline-none z-20 overflow-hidden">
                         <div className="p-4">
                             <h4 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1">
                                 Authorize User
                             </h4>
-                            <p className="text-xs text-zinc-500 mb-4 truncate">
+                            <p className="text-xs text-zinc-500 mb-4 truncate border-b border-zinc-100 dark:border-zinc-700 pb-3">
                                 {userEmail}
                             </p>
 
@@ -112,15 +134,49 @@ export function AuthorizeClientButton({
                                         disabled={isLoading}
                                         className="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-xs font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none flex-shrink-0 transition-colors"
                                     >
-                                        {isLoading ? (
+                                        {isLoading && !isDeleting ? (
                                             <Loader2 className="w-4 h-4 animate-spin" />
                                         ) : (
-                                            'Confirm'
+                                            'Authorize'
                                         )}
                                     </button>
                                 </div>
                             </div>
                         </div>
+
+                        {/* Danger Zone: Only show for unpaid users */}
+                        <div className="bg-red-50/50 dark:bg-red-950/20 p-4 border-t border-red-100 dark:border-red-900/30">
+                            {showDeleteConfirm ? (
+                                <div className="space-y-2 animate-in fade-in zoom-in duration-200">
+                                    <p className="text-xs text-red-700 dark:text-red-400 font-medium">Are you sure? This cannot be undone.</p>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => setShowDeleteConfirm(false)}
+                                            disabled={isLoading}
+                                            className="flex-1 py-1.5 px-2 bg-white dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-700 text-xs font-medium rounded-md border border-zinc-200 dark:border-zinc-700 transition-colors"
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            onClick={handleDelete}
+                                            disabled={isLoading}
+                                            className="flex-1 py-1.5 px-2 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-md transition-colors flex justify-center items-center"
+                                        >
+                                            {isLoading && isDeleting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Yes, Delete'}
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => setShowDeleteConfirm(true)}
+                                    className="w-full text-left text-xs font-medium text-red-600 hover:text-red-700 dark:text-red-500 dark:hover:text-red-400 flex items-center justify-between group"
+                                >
+                                    <span>Delete Unpaid User</span>
+                                    <span className="opacity-0 group-hover:opacity-100 transition-opacity">&rarr;</span>
+                                </button>
+                            )}
+                        </div>
+
                     </div>
                 </>
             )}

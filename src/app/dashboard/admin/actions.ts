@@ -73,3 +73,61 @@ export async function authorizeUser(userId: string, tier: string) {
         return { error: error.message || 'An unknown error occurred' };
     }
 }
+
+/**
+ * Manually deletes an unpaid user from the authentication system and database.
+ * Only callable by admins.
+ */
+export async function deleteUser(userId: string) {
+    try {
+        // 1. Verify the caller is an admin
+        await requireAdmin();
+
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+        if (!supabaseUrl || !supabaseServiceKey) {
+            throw new Error('Missing Supabase credentials for Admin API');
+        }
+
+        const { createClient: createAdminClient } = await import('@supabase/supabase-js');
+        const supabaseAdmin = createAdminClient(supabaseUrl, supabaseServiceKey, {
+            auth: { autoRefreshToken: false, persistSession: false }
+        });
+
+        // 2. Safety Check: Verify the user has NOT paid before deleting
+        const { data: targetUser, error: fetchError } = await supabaseAdmin
+            .from('users')
+            .select('has_paid, role')
+            .eq('id', userId)
+            .single();
+
+        if (fetchError || !targetUser) {
+            throw new Error('User not found.');
+        }
+
+        if (targetUser.has_paid) {
+            throw new Error('Cannot delete a user who has completed payment.');
+        }
+
+        if (targetUser.role === 'admin') {
+            throw new Error('Cannot delete an admin user.');
+        }
+
+        // 3. Delete from Supabase Auth (This will cascade and delete the row in public.users)
+        const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
+
+        if (deleteError) {
+            console.error('Failed to delete user:', deleteError);
+            return { error: 'Failed to delete user from database.' };
+        }
+
+        // 4. Refresh Admin UI
+        revalidatePath('/dashboard/admin');
+
+        return { success: true };
+    } catch (error: any) {
+        console.error('Admin Delete Action Error:', error);
+        return { error: error.message || 'An unknown error occurred during deletion.' };
+    }
+}

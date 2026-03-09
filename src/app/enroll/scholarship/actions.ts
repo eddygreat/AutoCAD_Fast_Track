@@ -19,13 +19,16 @@ export async function scholarshipSignup(formData: FormData) {
         return redirect(`/enroll/scholarship?tier=${tier}&amount=${amount}&code=${code}&message=Invalid scholarship code`);
     }
 
+    const nextUrl = encodeURIComponent(`/enroll/scholarship/checkout?tier=${tier}&amount=${amount}`);
     const data = {
         email,
         password,
         options: {
             data: {
                 plan_tier: tier,
-            }
+                scholarship_amount: amount,
+            },
+            emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/confirm?next=${nextUrl}`
         }
     };
 

@@ -1,5 +1,6 @@
 import { signup } from '../actions';
 import Link from 'next/link';
+import { PasswordInput } from '@/components/PasswordInput';
 
 export default async function RegisterPage({
     searchParams,
@@ -39,14 +40,7 @@ export default async function RegisterPage({
 
                     <div className="space-y-2">
                         <label className="text-sm font-medium leading-none" htmlFor="password">Password</label>
-                        <input
-                            id="password"
-                            name="password"
-                            type="password"
-                            className="flex h-10 w-full rounded-md border border-zinc-200 bg-transparent px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-600 dark:border-zinc-800 dark:focus:ring-blue-500"
-                            required
-                            minLength={6}
-                        />
+                        <PasswordInput minLength={6} placeholder="********" className="rounded-md" />
                         <p className="text-xs text-zinc-500">Must be at least 6 characters long.</p>
                     </div>
 

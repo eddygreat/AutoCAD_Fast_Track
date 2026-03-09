@@ -1,15 +1,20 @@
 import { getUserSession } from '@/app/auth/session';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
-import { ShieldCheck, UserCheck, CheckCircle2, XCircle } from 'lucide-react';
+import { ShieldCheck, UserCheck, CheckCircle2, XCircle, Filter } from 'lucide-react';
 import { AuthorizeClientButton } from './AuthorizeClientButton';
 import { ScholarshipLinkGenerator } from './ScholarshipLinkGenerator';
+import Link from 'next/link';
 
 export const metadata = {
     title: 'Admin Dashboard | CAD Fast Track',
 };
 
-export default async function AdminDashboardPage() {
+export default async function AdminDashboardPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ status?: string, tier?: string }>
+}) {
     // 1. Verify Authentication & Role
     const user = await getUserSession();
     if (!user) {
@@ -27,15 +32,46 @@ export default async function AdminDashboardPage() {
         redirect('/dashboard');
     }
 
-    // 2. Fetch all users from the users table, sorted by newest first
-    const { data: allUsers, error: usersError } = await supabase
+    // 2. Resolve Search Filters
+    const resolvedParams = await searchParams;
+    const currentStatus = resolvedParams?.status || 'all';
+    const currentTier = resolvedParams?.tier || 'all';
+
+    // 3. Build Query
+    let query = supabase
         .from('users')
         .select('id, email, role, has_paid, plan_tier, created_at')
         .order('created_at', { ascending: false });
 
+    if (currentStatus === 'paid') {
+        query = query.eq('has_paid', true);
+    } else if (currentStatus === 'unpaid') {
+        query = query.eq('has_paid', false);
+    }
+
+    if (currentTier !== 'all') {
+        query = query.eq('plan_tier', currentTier);
+    }
+
+    const { data: allUsers, error: usersError } = await query;
+
     if (usersError) {
         console.error("Error fetching users for admin:", usersError);
     }
+
+    // Helper for generating filter URLs
+    const createFilterUrl = (type: 'status' | 'tier', value: string) => {
+        const params = new URLSearchParams();
+        if (type === 'status') {
+            if (value !== 'all') params.set('status', value);
+            if (currentTier !== 'all') params.set('tier', currentTier);
+        } else {
+            if (currentStatus !== 'all') params.set('status', currentStatus);
+            if (value !== 'all') params.set('tier', value);
+        }
+        const qs = params.toString();
+        return `/dashboard/admin${qs ? `?${qs}` : ''}`;
+    };
 
     return (
         <div className="min-h-[calc(100vh-5rem)] py-12 bg-zinc-50 dark:bg-zinc-950">
@@ -55,11 +91,51 @@ export default async function AdminDashboardPage() {
                 </div>
 
                 <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden">
-                    <div className="px-6 py-5 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
+                    <div className="px-6 py-5 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <h3 className="text-lg font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
                             <UserCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                             Registered Students ({allUsers?.length || 0})
                         </h3>
+
+                        {/* Filters */}
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                            <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800/50 p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                                <Filter className="w-4 h-4 text-zinc-500 ml-1 shrink-0" />
+
+                                <div className="space-x-1 border-r border-zinc-300 dark:border-zinc-700 pr-2 mr-1 flex items-center">
+                                    <span className="text-xs font-semibold text-zinc-500 uppercase px-1">Status:</span>
+                                    {['all', 'paid', 'unpaid'].map(status => (
+                                        <Link
+                                            key={status}
+                                            href={createFilterUrl('status', status)}
+                                            className={`px-2.5 py-1 text-xs font-medium rounded-md capitalize transition-colors ${currentStatus === status
+                                                    ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-600'
+                                                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50'
+                                                }`}
+                                        >
+                                            {status}
+                                        </Link>
+                                    ))}
+                                </div>
+
+                                <div className="space-x-1 flex items-center">
+                                    <span className="text-xs font-semibold text-zinc-500 uppercase px-1">Tier:</span>
+                                    {['all', 'basic', 'silver', 'premium', 'gold'].map(tier => (
+                                        <Link
+                                            key={tier}
+                                            href={createFilterUrl('tier', tier)}
+                                            className={`px-2.5 py-1 text-xs font-medium rounded-md capitalize transition-colors ${currentTier === tier
+                                                    ? 'bg-white dark:bg-zinc-700 text-zinc-900 dark:text-white shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-600'
+                                                    : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 hover:bg-zinc-200/50 dark:hover:bg-zinc-700/50'
+                                                }`}
+                                        >
+                                            {tier}
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
                     <div className="overflow-x-auto">
@@ -121,7 +197,7 @@ export default async function AdminDashboardPage() {
                                 {(!allUsers || allUsers.length === 0) && (
                                     <tr>
                                         <td colSpan={6} className="px-6 py-8 text-center text-sm text-zinc-500">
-                                            No users found.
+                                            No users found matching these filters.
                                         </td>
                                     </tr>
                                 )}
