@@ -5,7 +5,7 @@ const tiers = [
     {
         name: 'Basic',
         value: 'basic',
-        price: '$29.99',
+        price: '$1.00',
         description: 'Perfect for self-starters who want to learn at their own pace.',
         features: [
             'Self-paced learning',
