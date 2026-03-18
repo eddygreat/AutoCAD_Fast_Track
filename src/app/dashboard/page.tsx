@@ -12,10 +12,10 @@ export const metadata = {
 
 // Define pricing logic internally for the checkout component
 const TIER_PRICING: Record<string, number> = {
-    basic: 99,
-    silver: 199,
-    premium: 499,
-    gold: 999
+    basic: 1,
+    silver: 49.99,
+    premium: 99.99,
+    gold: 199.99
 };
 
 export default async function DashboardPage() {

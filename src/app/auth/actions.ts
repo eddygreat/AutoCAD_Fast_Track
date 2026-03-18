@@ -32,6 +32,7 @@ export async function signup(formData: FormData) {
         options: {
             data: {
                 plan_tier: formData.get('tier') as string,
+                phone: formData.get('phone') as string,
             },
             emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/confirm`
         }
@@ -44,7 +45,7 @@ export async function signup(formData: FormData) {
     }
 
     revalidatePath('/', 'layout');
-    redirect('/dashboard');
+    redirect('/auth/login?message=Registration successful! Kindly login to proceed.');
 }
 
 export async function signout() {
