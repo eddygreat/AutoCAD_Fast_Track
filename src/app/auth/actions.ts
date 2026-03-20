@@ -64,6 +64,7 @@ export async function requestPasswordReset(formData: FormData) {
     });
 
     if (error) {
+        console.error('Password reset request failed:', error);
         return redirect(`/auth/forgot-password?message=${error.message}`);
     }
 
