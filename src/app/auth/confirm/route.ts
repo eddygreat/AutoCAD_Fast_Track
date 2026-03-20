@@ -12,7 +12,12 @@ export async function GET(request: NextRequest) {
 
     let redirectUrl = `/auth/verified`;
     if (next && next !== '/dashboard') {
-        redirectUrl += `?next=${encodeURIComponent(next)}`;
+        // If the next page is reset-password, skip the 'verified' success screen
+        if (next === '/auth/reset-password') {
+            redirectUrl = next;
+        } else {
+            redirectUrl += `?next=${encodeURIComponent(next)}`;
+        }
     }
 
     if (token_hash && type) {
