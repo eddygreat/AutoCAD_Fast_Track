@@ -149,6 +149,9 @@ export default async function UpgradePage({
                                             <div className="text-2xl font-extrabold text-zinc-900 dark:text-white">
                                                 ${option.difference}
                                             </div>
+                                            <p className="text-[10px] text-zinc-500 font-medium">
+                                                ≈ ₦{(option.difference * (Number(process.env.NEXT_PUBLIC_USD_TO_NGN_RATE) || 1400)).toLocaleString()}
+                                            </p>
                                         </div>
                                     </div>
                                 </Link>
@@ -188,7 +191,12 @@ export default async function UpgradePage({
 
                                 <div className="flex justify-between items-center pt-2 mb-6">
                                     <span className="font-bold text-zinc-900 dark:text-white">Total Due</span>
-                                    <span className="font-extrabold text-2xl text-zinc-900 dark:text-white">${selectedOption.difference}</span>
+                                    <div className="text-right">
+                                        <span className="font-extrabold text-2xl text-zinc-900 dark:text-white">${selectedOption.difference}</span>
+                                        <p className="text-xs text-zinc-500 font-medium">
+                                            ≈ ₦{(selectedOption.difference * (Number(process.env.NEXT_PUBLIC_USD_TO_NGN_RATE) || 1400)).toLocaleString()}
+                                        </p>
+                                    </div>
                                 </div>
 
                                 <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 p-3 rounded-lg text-xs flex gap-2 items-start mb-6">

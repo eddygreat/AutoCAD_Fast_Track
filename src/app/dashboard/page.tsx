@@ -69,7 +69,12 @@ export default async function DashboardPage() {
                         </div>
                         <div className="flex justify-between items-center text-sm">
                             <span className="text-zinc-500">Amount Due:</span>
-                            <span className="font-bold text-lg">${amountDue}</span>
+                            <div className="text-right">
+                                <span className="font-bold text-lg">${amountDue}</span>
+                                <p className="text-[10px] text-zinc-500 font-medium">
+                                    ≈ ₦{(amountDue * (Number(process.env.NEXT_PUBLIC_USD_TO_NGN_RATE) || 1400)).toLocaleString()}
+                                </p>
+                            </div>
                         </div>
                     </div>
 

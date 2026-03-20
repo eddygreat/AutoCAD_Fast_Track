@@ -26,10 +26,10 @@ export async function POST(req: NextRequest) {
         }
 
         // 2. Prepare Paystack Initialize Payload
-        // Convert dollar amount to Kobo/Cents (Paystack expects base currency unit)
-        // Assume the amount passed in is dollars, so we multiply by 100
-        // (If using Naira, ensure your base price is correct. e.g., NGN 100,000 = 10000000 kobo)
-        const amountInSubunits = amount * 100;
+        // Convert dollar amount to Naira subunits (Kobo)
+        const exchangeRate = Number(process.env.NEXT_PUBLIC_USD_TO_NGN_RATE) || 1400;
+        const amountInNaira = amount * exchangeRate;
+        const amountInKobo = Math.round(amountInNaira * 100);
 
         // Generate a secure, unique reference for this specific transaction attempt
         const reference = `cad_ft_${crypto.randomBytes(8).toString('hex')}`;
@@ -52,7 +52,8 @@ export async function POST(req: NextRequest) {
             },
             body: JSON.stringify({
                 email: user.email,
-                amount: amountInSubunits,
+                amount: amountInKobo,
+                currency: 'NGN',
                 reference: reference,
                 metadata: {
                     user_id: user.id,

@@ -69,7 +69,12 @@ export default async function ScholarshipCheckoutPage({
                         </div>
                         <div className="flex justify-between items-center text-sm border-t border-zinc-200 dark:border-zinc-800 pt-3">
                             <span className="text-zinc-500 font-medium">Discounted Price:</span>
-                            <span className="font-extrabold text-2xl text-zinc-900 dark:text-zinc-50">${customAmount}</span>
+                            <div className="text-right">
+                                <span className="font-extrabold text-2xl text-zinc-900 dark:text-zinc-50">${customAmount}</span>
+                                <p className="text-xs text-zinc-500 font-medium">
+                                    ≈ ₦{(customAmount * (Number(process.env.NEXT_PUBLIC_USD_TO_NGN_RATE) || 1400)).toLocaleString()}
+                                </p>
+                            </div>
                         </div>
                     </div>
 
