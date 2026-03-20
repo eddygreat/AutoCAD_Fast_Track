@@ -78,6 +78,10 @@ export async function requestPasswordReset(formData: FormData) {
         console.log('Password reset link sent successfully');
         return redirect(`/auth/forgot-password?success=Check your email for the reset link`);
     } catch (err) {
+        // Ignore NEXT_REDIRECT errors as they are expected behavior for redirect()
+        if (err instanceof Error && err.message === 'NEXT_REDIRECT') {
+            throw err;
+        }
         console.error('UNEXPECTED EXCEPTION:', err);
         return redirect(`/auth/forgot-password?message=An unexpected error occurred. Please check server logs.`);
     }
