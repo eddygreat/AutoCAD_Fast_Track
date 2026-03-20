@@ -26,13 +26,22 @@ export async function login(formData: FormData) {
 export async function signup(formData: FormData) {
     const supabase = await createClient();
 
+    const email = (formData.get('email') as string)?.trim();
+    const tier = (formData.get('tier') as string || 'basic').toLowerCase().trim();
+    const phone = (formData.get('phone') as string)?.trim();
+
+    console.log('--- SIGNUP ATTEMPT ---');
+    console.log('Email:', email);
+    console.log('Tier:', tier);
+    console.log('Phone:', phone);
+
     const data = {
-        email: formData.get('email') as string,
+        email: email,
         password: formData.get('password') as string,
         options: {
             data: {
-                plan_tier: formData.get('tier') as string,
-                phone: formData.get('phone') as string,
+                plan_tier: tier,
+                phone: phone,
             },
             emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/confirm`
         }
@@ -41,6 +50,7 @@ export async function signup(formData: FormData) {
     const { error } = await supabase.auth.signUp(data);
 
     if (error) {
+        console.error('SIGNUP ERROR:', error);
         return redirect(`/auth/register?message=${error.message}`);
     }
 
