@@ -19,10 +19,16 @@ export default async function ResetPasswordPage({
                 </div>
 
                 <form className="space-y-4">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium leading-none" htmlFor="password">New Password</label>
-                        <PasswordInput />
-                        <p className="text-xs text-zinc-500 mt-1">Must be at least 6 characters long.</p>
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium leading-none" htmlFor="password">New Password</label>
+                            <PasswordInput id="password" name="password" />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium leading-none" htmlFor="confirmPassword">Confirm New Password</label>
+                            <PasswordInput id="confirmPassword" name="confirmPassword" placeholder="Confirm your new password" />
+                        </div>
+                        <p className="text-xs text-zinc-500">Must be at least 6 characters long.</p>
                     </div>
 
                     <button

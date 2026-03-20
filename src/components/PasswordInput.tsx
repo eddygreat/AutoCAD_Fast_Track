@@ -4,10 +4,14 @@ import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
 export function PasswordInput({
+    id = "password",
+    name = "password",
     minLength,
     placeholder = "••••••••",
     className = "",
 }: {
+    id?: string;
+    name?: string;
     minLength?: number;
     placeholder?: string;
     className?: string;
@@ -17,8 +21,8 @@ export function PasswordInput({
     return (
         <div className="relative">
             <input
-                id="password"
-                name="password"
+                id={id}
+                name={name}
                 type={showPassword ? 'text' : 'password'}
                 className={`flex h-10 w-full rounded-xl border border-zinc-200 bg-transparent px-3 py-2 text-sm placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-600 dark:border-zinc-800 dark:focus:ring-blue-500 pr-10 ${className}`}
                 required
