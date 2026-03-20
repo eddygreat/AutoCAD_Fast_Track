@@ -56,19 +56,31 @@ export async function signout() {
 }
 
 export async function requestPasswordReset(formData: FormData) {
-    const supabase = await createClient();
-    const email = (formData.get('email') as string)?.trim();
+    try {
+        const supabase = await createClient();
+        const email = (formData.get('email') as string)?.trim();
+        const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/reset-password`;
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/reset-password`,
-    });
+        console.log('--- PASSWORD RESET ATTEMPT ---');
+        console.log('Email:', email);
+        console.log('Redirect URL:', redirectTo);
+        console.log('NEXT_PUBLIC_SITE_URL:', process.env.NEXT_PUBLIC_SITE_URL);
 
-    if (error) {
-        console.error('Password reset request failed:', error);
-        return redirect(`/auth/forgot-password?message=${error.message}`);
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: redirectTo,
+        });
+
+        if (error) {
+            console.error('SUPABASE ERROR:', error);
+            return redirect(`/auth/forgot-password?message=${error.message}`);
+        }
+
+        console.log('Password reset link sent successfully');
+        return redirect(`/auth/forgot-password?success=Check your email for the reset link`);
+    } catch (err) {
+        console.error('UNEXPECTED EXCEPTION:', err);
+        return redirect(`/auth/forgot-password?message=An unexpected error occurred. Please check server logs.`);
     }
-
-    return redirect(`/auth/forgot-password?success=Check your email for the reset link`);
 }
 
 export async function resetPassword(formData: FormData) {
