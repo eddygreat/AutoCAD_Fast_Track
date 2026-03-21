@@ -60,8 +60,8 @@ export async function POST(req: NextRequest) {
                     tier: tier,
                 },
                 channels: ['card', 'bank', 'ussd', 'qr', 'mobile_money', 'bank_transfer'],
-                // Optional: redirect URL if you don't use the popup
-                // callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`, 
+                // Redirect user back to the dashboard after successful payment
+                callback_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`, 
             }),
         });
 

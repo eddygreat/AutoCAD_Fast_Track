@@ -50,24 +50,32 @@ export async function POST(req: NextRequest) {
             const userId = metadata.user_id;
             const assignedTier = metadata.tier;
 
+            console.log(`[Webhook] Processing successful payment for User: ${userId}, Tier: ${assignedTier}`);
+
             // 5. Update the Database using the Supabase Service Role (Admin permission)
             // We use the service role key to bypass RLS policies safely from our secure backend
             const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
-            const { error: updateError } = await supabaseAdmin
+            const { data: updateData, error: updateError } = await supabaseAdmin
                 .from('users')
                 .update({
                     has_paid: true,
                     plan_tier: assignedTier,
                 })
-                .eq('id', userId);
+                .eq('id', userId)
+                .select();
 
             if (updateError) {
-                console.error('Database update failed:', updateError);
+                console.error('[Webhook] Database update failed:', updateError);
                 return NextResponse.json({ error: 'Database update failed' }, { status: 500 });
             }
 
-            console.log(`Successfully upgraded user ${userId} to ${assignedTier}`);
+            if (!updateData || updateData.length === 0) {
+                console.error(`[Webhook] No user found with ID: ${userId}. Update failed.`);
+                return NextResponse.json({ error: 'User not found' }, { status: 404 });
+            }
+
+            console.log(`[Webhook] Successfully upgraded user ${userId} to ${assignedTier}`);
         }
 
         // 6. Return 200 OK to Paystack within 5 seconds to prevent retries
