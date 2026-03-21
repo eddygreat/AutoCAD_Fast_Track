@@ -62,6 +62,11 @@ export default async function DashboardPage() {
                         To unlock your course dashboard and begin learning, please complete the payment for your selected plan.
                     </p>
 
+                    <p className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/10 p-2 rounded-lg border border-amber-100 dark:border-amber-900/20">
+                        <strong>Just Paid?</strong> It may take a few seconds for access to activate. If you already paid, please 
+                        <Link href="/dashboard" className="underline ml-1 font-bold">click here to refresh</Link>.
+                    </p>
+
                     <div className="bg-zinc-50 dark:bg-zinc-950 rounded-xl p-4 border border-zinc-200 dark:border-zinc-800">
                         <div className="flex justify-between items-center text-sm mb-2">
                             <span className="text-zinc-500">Selected Plan:</span>

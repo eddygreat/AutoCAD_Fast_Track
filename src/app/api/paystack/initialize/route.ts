@@ -60,8 +60,8 @@ export async function POST(req: NextRequest) {
                     tier: tier,
                 },
                 channels: ['card', 'bank', 'ussd', 'qr', 'mobile_money', 'bank_transfer'],
-                // Redirect user back to the dashboard after successful payment
-                callback_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`, 
+                // Redirect user directly to the first lesson after successful payment
+                callback_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard/lessons/1`, 
             }),
         });
 
