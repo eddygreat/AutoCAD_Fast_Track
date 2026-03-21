@@ -24,12 +24,19 @@ export default async function DailyLessonPage({ params }: { params: Promise<{ da
     // 1. Fetch User Profile to get their plan_tier and course_id
     const { data: profile } = await supabase
         .from('users')
-        .select('plan_tier')
+        .select('plan_tier, has_paid, role')
         .eq('id', user.id)
         .single();
 
     if (!profile) {
         redirect('/auth/login');
+    }
+
+    // 2. Security Check: Only allow paid users or admins
+    const isPaid = profile.has_paid === true;
+    const isAdmin = profile.role === 'admin';
+    if (!isPaid && !isAdmin) {
+        redirect('/dashboard');
     }
 
     // NOTE: In a real system you'd look up the user's specific enrolled course ID. 

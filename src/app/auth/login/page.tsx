@@ -38,7 +38,7 @@ export default async function LoginPage({
                                 Forgot Password?
                             </Link>
                         </div>
-                        <PasswordInput />
+                        <PasswordInput id="password" name="password" />
                     </div>
 
                     <button

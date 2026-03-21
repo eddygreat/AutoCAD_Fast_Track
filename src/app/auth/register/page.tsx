@@ -52,7 +52,7 @@ export default async function RegisterPage({
 
                     <div className="space-y-2">
                         <label className="text-sm font-medium leading-none" htmlFor="password">Password</label>
-                        <PasswordInput minLength={6} placeholder="********" className="rounded-md" />
+                        <PasswordInput id="password" name="password" minLength={6} placeholder="********" className="rounded-md" />
                         <p className="text-xs text-zinc-500">Must be at least 6 characters long.</p>
                     </div>
 
