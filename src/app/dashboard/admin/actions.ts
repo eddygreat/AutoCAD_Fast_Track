@@ -75,7 +75,7 @@ export async function authorizeUser(userId: string, tier: string) {
 }
 
 /**
- * Manually deletes an unpaid user from the authentication system and database.
+ * Manually deletes a user from the authentication system and database.
  * Only callable by admins.
  */
 export async function deleteUser(userId: string) {
@@ -95,10 +95,10 @@ export async function deleteUser(userId: string) {
             auth: { autoRefreshToken: false, persistSession: false }
         });
 
-        // 2. Safety Check: Verify the user has NOT paid before deleting
+        // 2. Safety Check: Verify the target is NOT another admin
         const { data: targetUser, error: fetchError } = await supabaseAdmin
             .from('users')
-            .select('has_paid, role')
+            .select('role, email')
             .eq('id', userId)
             .single();
 
@@ -106,15 +106,11 @@ export async function deleteUser(userId: string) {
             throw new Error('User not found.');
         }
 
-        if (targetUser.has_paid) {
-            throw new Error('Cannot delete a user who has completed payment.');
-        }
-
         if (targetUser.role === 'admin') {
             throw new Error('Cannot delete an admin user.');
         }
 
-        // 3. Delete from public.users manually (Since it doesn't cascade automatically)
+        // 3. Delete from public.users manually
         const { error: dbDeleteError } = await supabaseAdmin
             .from('users')
             .delete()
@@ -133,13 +129,49 @@ export async function deleteUser(userId: string) {
             return { error: 'Failed to delete user secure identity.' };
         }
 
-        // 4. Refresh Admin UI
         revalidatePath('/dashboard/admin');
-
         return { success: true };
     } catch (error: any) {
         console.error('Admin Delete Action Error:', error);
         return { error: error.message || 'An unknown error occurred during deletion.' };
+    }
+}
+
+/**
+ * Revokes a user's access (sets has_paid to false).
+ * Useful for refunds or temporary blocks.
+ */
+export async function revokeUserAccess(userId: string) {
+    try {
+        await requireAdmin();
+
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+        if (!supabaseUrl || !supabaseServiceKey) {
+            throw new Error('Missing Supabase credentials for Admin API');
+        }
+
+        const { createClient: createAdminClient } = await import('@supabase/supabase-js');
+        const supabaseAdmin = createAdminClient(supabaseUrl, supabaseServiceKey, {
+            auth: { autoRefreshToken: false, persistSession: false }
+        });
+
+        const { error: updateError } = await supabaseAdmin
+            .from('users')
+            .update({ has_paid: false })
+            .eq('id', userId);
+
+        if (updateError) {
+            console.error('Failed to revoke access:', updateError);
+            return { error: 'Failed to update user access status' };
+        }
+
+        revalidatePath('/dashboard/admin');
+        return { success: true };
+    } catch (error: any) {
+        console.error('Admin Revoke Action Error:', error);
+        return { error: error.message || 'An unknown error occurred while revoking access' };
     }
 }
 
