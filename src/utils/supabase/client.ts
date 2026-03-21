@@ -8,5 +8,9 @@ export const createSupabaseClient = () => {
         throw new Error('Missing Supabase environment variables! Please check your .env.local file.')
     }
 
-    return createClient(supabaseUrl, supabaseKey)
+    return createClient(supabaseUrl, supabaseKey, {
+        auth: {
+            persistSession: false,
+        },
+    })
 }
