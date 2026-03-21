@@ -76,6 +76,11 @@ export async function POST(req: NextRequest) {
             }
 
             console.log(`[Webhook] Successfully upgraded user ${userId} to ${assignedTier}`);
+
+            // 6. Clear the Next.js cache so the dashboard immediately shows the new status
+            const { revalidatePath } = await import('next/cache');
+            revalidatePath('/dashboard');
+            revalidatePath('/dashboard/admin');
         }
 
         // 6. Return 200 OK to Paystack within 5 seconds to prevent retries
