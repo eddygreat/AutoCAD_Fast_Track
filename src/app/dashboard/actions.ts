@@ -35,3 +35,26 @@ export async function markLessonComplete(lessonId: string, score: number) {
 
     return { success: true };
 }
+
+/**
+ * Updates the user's full name (for certificate issuing).
+ */
+export async function updateUserName(fullName: string) {
+    const user = await getUserSession();
+    if (!user) throw new Error('Unauthorized');
+
+    const supabase = await createClient();
+
+    const { error } = await supabase
+        .from('users')
+        .update({ full_name: fullName })
+        .eq('id', user.id);
+
+    if (error) {
+        console.error('Error updating user name:', error);
+        return { error: 'Failed to update name' };
+    }
+
+    revalidatePath('/dashboard');
+    return { success: true };
+}

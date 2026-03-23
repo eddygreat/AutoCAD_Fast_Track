@@ -2,8 +2,10 @@ import { getUserSession } from '@/app/auth/session';
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import { ShieldCheck, UserCheck, CheckCircle2, XCircle, Filter } from 'lucide-react';
+import { AdminProgressBadge } from '@/components/AdminProgressBadge';
 import { AuthorizeClientButton } from './AuthorizeClientButton';
 import { ScholarshipLinkGenerator } from './ScholarshipLinkGenerator';
+import { CertificateSettings } from './CertificateSettings';
 import Link from 'next/link';
 
 export const metadata = {
@@ -59,7 +61,26 @@ export default async function AdminDashboardPage({
         console.error("Error fetching users for admin:", usersError);
     }
 
-    // 4. Get Scholarship Settings
+    // 4. Fetch Progress Counts for all users
+    const { data: progressData } = await supabase
+        .from('user_progress')
+        .select('user_id')
+        .eq('is_completed', true);
+
+    // 5. Fetch Total Lessons Count
+    const { count: totalLessonsCount } = await supabase
+        .from('daily_lessons')
+        .select('*', { count: 'exact', head: true });
+
+    const totalLessons = totalLessonsCount || 30; // Fallback to 30
+
+    // Map user IDs to their completed counts
+    const userProgressMap: Record<string, number> = {};
+    progressData?.forEach(p => {
+        userProgressMap[p.user_id] = (userProgressMap[p.user_id] || 0) + 1;
+    });
+
+    // 6. Get Scholarship Settings
     const { getScholarshipSettings } = await import('./actions');
     const settings = await getScholarshipSettings();
 
@@ -90,10 +111,17 @@ export default async function AdminDashboardPage({
                     </div>
                 </div>
 
-                <div className="mb-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
                     <ScholarshipLinkGenerator
                         isActive={settings.scholarship_active}
                         currentCode={settings.scholarship_code}
+                    />
+                    <CertificateSettings 
+                        initialSettings={{
+                            issuer_name: settings.issuer_name,
+                            issuer_title: settings.issuer_title,
+                            issuer_signature_url: settings.issuer_signature_url
+                        }} 
                     />
                 </div>
 
@@ -154,6 +182,7 @@ export default async function AdminDashboardPage({
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Role</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Status</th>
                                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Current Tier</th>
+                                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Progress</th>
                                     <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-zinc-500 uppercase tracking-wider">Action</th>
                                 </tr>
                             </thead>
@@ -193,6 +222,12 @@ export default async function AdminDashboardPage({
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 uppercase font-medium">
                                                 {student.plan_tier}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <AdminProgressBadge 
+                                                    completed={userProgressMap[student.id] || 0} 
+                                                    total={totalLessons} 
+                                                />
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                                 <AuthorizeClientButton userId={student.id} userEmail={student.email} isPaid={student.has_paid} currentTier={student.plan_tier} />

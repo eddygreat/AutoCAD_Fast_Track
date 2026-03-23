@@ -184,17 +184,61 @@ export async function getScholarshipSettings() {
         const supabase = await createClient();
         const { data, error } = await supabase
             .from('app_settings')
-            .select('scholarship_active, scholarship_code')
+            .select('scholarship_active, scholarship_code, issuer_name, issuer_title, issuer_signature_url')
             .eq('id', 1)
             .single();
 
         if (error || !data) {
             // Fallback gracefully if table isn't seeded correctly yet
-            return { scholarship_active: false, scholarship_code: 'CAD-SCHOLAR-2026' };
+            return { 
+                scholarship_active: false, 
+                scholarship_code: 'CAD-SCHOLAR-2026',
+                issuer_name: 'Edward Manasseh',
+                issuer_title: 'Lead Instructor, CAD Fast Track',
+                issuer_signature_url: ''
+            };
         }
         return data;
     } catch (error) {
-        return { scholarship_active: false, scholarship_code: 'CAD-SCHOLAR-2026' };
+        return { 
+            scholarship_active: false, 
+            scholarship_code: 'CAD-SCHOLAR-2026',
+            issuer_name: 'Edward Manasseh',
+            issuer_title: 'Lead Instructor, CAD Fast Track',
+            issuer_signature_url: ''
+        };
+    }
+}
+
+/**
+ * Updates the certificate settings (signature, issuer name, etc).
+ */
+export async function updateCertificateSettings(settings: { 
+    issuer_name: string, 
+    issuer_title: string, 
+    issuer_signature_url: string 
+}) {
+    try {
+        await requireAdmin();
+        const supabase = await createClient();
+
+        const { error } = await supabase
+            .from('app_settings')
+            .update(settings)
+            .eq('id', 1);
+
+        if (error) {
+            console.error('Failed to update certificate settings:', error);
+            // If the error is "column does not exist", we might need to inform the user
+            // but for now we'll just return the error.
+            return { error: 'Failed to update settings. Please ensure DB columns exist.' };
+        }
+
+        revalidatePath('/dashboard/admin');
+        return { success: true };
+    } catch (error: any) {
+        console.error('Admin Certificate Settings Action Error:', error);
+        return { error: error.message || 'An unknown error occurred' };
     }
 }
 

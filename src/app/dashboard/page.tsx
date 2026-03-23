@@ -5,6 +5,7 @@ import { BookOpen, Calendar, Award, PlayCircle, Star, FileText, Lock } from 'luc
 import Link from 'next/link';
 import { CourseProgressBar } from '@/components/CourseProgressBar';
 import { PaystackCheckout } from '@/components/PaystackCheckout';
+import { CertificateClaimSection } from '@/components/CertificateClaimSection';
 
 export const metadata = {
     title: 'Dashboard | CAD Fast Track',
@@ -107,6 +108,7 @@ export default async function DashboardPage() {
 
     const completedDays = userProgressData ? userProgressData.length : 0;
     const nextLessonDay = completedDays + 1;
+    const isFinished = completedDays >= totalDays && totalDays > 0;
 
     return (
         <div className="min-h-[calc(100vh-5rem)] py-12 bg-zinc-50 dark:bg-zinc-950">
@@ -119,6 +121,10 @@ export default async function DashboardPage() {
                         {isAdmin && <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 border border-red-200">Admin View</span>}
                     </p>
                 </div>
+
+                {isFinished && (
+                    <CertificateClaimSection initialName={(profile as any)?.full_name || ''} />
+                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     {/* Plan Details Card */}
