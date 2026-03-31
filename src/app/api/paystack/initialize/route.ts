@@ -2,6 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import crypto from 'crypto';
 
+// Define the tier hierarchy and pricing
+const TIER_PRICING = {
+    basic: { price: 29.99, rank: 1, name: 'Basic' },
+    silver: { price: 49.99, rank: 2, name: 'Silver' },
+    premium: { price: 99.99, rank: 3, name: 'Premium' },
+    gold: { price: 199.99, rank: 4, name: 'Gold Premium' },
+} as const;
+
+type TierKey = keyof typeof TIER_PRICING;
+
 // Types for the request body
 interface InitiatizePaymentRequest {
     tier: string;
@@ -23,6 +33,44 @@ export async function POST(req: NextRequest) {
 
         if (!tier || !amount) {
             return NextResponse.json({ error: 'Missing tier or amount' }, { status: 400 });
+        }
+
+        // 2. Validate Pricing Server-Side
+        const { data: profile } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+        let expectedAmount = 0;
+        const targetTierDetails = TIER_PRICING[tier as TierKey];
+        
+        if (!targetTierDetails) {
+             return NextResponse.json({ error: 'Invalid tier' }, { status: 400 });
+        }
+
+        if (profile?.has_paid) {
+            // Upgrade Scenario
+            const currentTierDetails = TIER_PRICING[(profile.plan_tier as TierKey) || 'basic'];
+            if (targetTierDetails.rank <= currentTierDetails.rank) {
+                return NextResponse.json({ error: 'Cannot upgrade to a lower or equal tier' }, { status: 400 });
+            }
+            const difference = targetTierDetails.price - currentTierDetails.price;
+            expectedAmount = Math.round(difference * 100) / 100;
+        } else {
+            // New Enrollment Scenario
+            const scholarshipAmountStr = user.user_metadata?.scholarship_amount;
+            if (scholarshipAmountStr && !isNaN(Number(scholarshipAmountStr))) {
+                expectedAmount = Number(scholarshipAmountStr);
+            } else {
+                expectedAmount = targetTierDetails.price;
+            }
+        }
+
+        // Ensure the client isn't trying to bypass pricing
+        if (Math.abs(amount - expectedAmount) > 0.02) {
+            console.error(`[Security Warning] Pricing bypass attempt detected! Client sent $${amount}, Server expected $${expectedAmount}`);
+            return NextResponse.json({ error: 'Invalid payment amount detected' }, { status: 400 });
         }
 
         // 2. Prepare Paystack Initialize Payload

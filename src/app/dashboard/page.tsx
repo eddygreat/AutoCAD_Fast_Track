@@ -11,9 +11,8 @@ export const metadata = {
     title: 'Dashboard | CAD Fast Track',
 };
 
-// Define pricing logic internally for the checkout component
 const TIER_PRICING: Record<string, number> = {
-    basic: 1,
+    basic: 29.99,
     silver: 49.99,
     premium: 99.99,
     gold: 199.99
