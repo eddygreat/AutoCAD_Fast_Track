@@ -22,7 +22,7 @@ export function PaystackCheckout({ tier, amount, email, buttonText = "Pay with P
         setError(null);
 
         try {
-            const res = await fetch('/api/paystack/initialize', {
+            const res = await fetch('/api/checkout/initialize', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

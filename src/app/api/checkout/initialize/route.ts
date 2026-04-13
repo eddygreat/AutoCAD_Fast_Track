@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
                 },
                 channels: ['card', 'bank', 'ussd', 'qr', 'mobile_money', 'bank_transfer'],
                 // Redirect user to our verification route after successful payment
-                callback_url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/paystack/verify`,            }),
+                callback_url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/checkout/verify`,            }),
         });
 
         const paystackData = await response.json();
